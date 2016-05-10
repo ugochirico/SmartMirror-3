@@ -1,5 +1,7 @@
 package info.cantu.smartmirror.view;
 
+import info.cantu.smartmirror.GlueWidget;
+
 import javax.swing.*;
 import java.awt.*;
 import java.util.List;
@@ -16,13 +18,19 @@ public class MainView extends JFrame {
     this.setExtendedState(JFrame.MAXIMIZED_BOTH);//fullscreen
     this.setUndecorated(true);//remove titlebar
 
+
     JPanel background = backgroundPane();
 
     for (Widget w : widgets) {
-      JPanel holder = widgetHolder();
-      holder.add(w);
-      background.add(holder);
-      w.onInitialize();
+      if (w instanceof GlueWidget) {
+        background.add(Box.createVerticalGlue());
+      }
+      else {
+        JPanel holder = widgetHolder();
+        holder.add(w);
+        background.add(holder);
+        w.onInitialize();
+      }
     }
 
     add(background);
@@ -31,6 +39,7 @@ public class MainView extends JFrame {
   }
 
 
+  //Box layout
   private JPanel backgroundPane() {
     JPanel background = new JPanel();
     background.setBackground(Color.BLACK);
@@ -39,6 +48,7 @@ public class MainView extends JFrame {
     return background;
   }
 
+  //Creates a holder which pushes the widget to the left
   private JPanel widgetHolder() {
     JPanel panel = new JPanel();
     panel.setBackground(Color.BLACK);

@@ -91,7 +91,7 @@ public class NewsView extends Widget implements ActionListener {
    */
   @Override
   public Dimension getPreferredSize() {
-    return new Dimension(800, (int) (LINE_COUNT * DIMEN * 1.5f));
+    return new Dimension(700, (int) (LINE_COUNT * DIMEN * 1.5f));
   }
 
   /**

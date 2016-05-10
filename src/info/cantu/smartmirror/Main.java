@@ -51,6 +51,7 @@ public class Main {
     addWidget(new WeatherView(), weather);
     addWidget(new WeatherForecastView(), weather);
 
+    addWidget(new GlueWidget(), null);
     //add news
     addWidget(new NewsView(), news);
 
