@@ -12,3 +12,4 @@
 hs_err_pid*
 
 src/client_secret.json
+.idea/workspace.xml
