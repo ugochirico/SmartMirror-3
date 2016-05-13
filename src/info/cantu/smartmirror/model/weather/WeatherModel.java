@@ -69,7 +69,8 @@ public class WeatherModel extends BaseModel {
     String[] res = new String[daily.getForecastCount()];
     for (int i = 0; i < res.length; i++) {
       res[i] = "" + iconFromCode(
-              daily.getForecastInstance(i).getWeatherInstance(0).getWeatherCode());
+              daily.getForecastInstance(i).getWeatherInstance(0).getWeatherCode(),
+              true);
     }
     return res;
   }

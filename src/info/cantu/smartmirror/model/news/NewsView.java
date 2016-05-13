@@ -33,7 +33,7 @@ public class NewsView extends Widget implements ActionListener {
    */
   @Override
   protected void onInitialize() {
-    this.timer = new Timer(12000, this);
+    this.timer = new Timer(3000 * LINE_COUNT, this);
     this.timer.start();
     positions = new int[LINE_COUNT];
   }
@@ -76,13 +76,17 @@ public class NewsView extends Widget implements ActionListener {
     FontMetrics fm = getFontMetrics(g2d.getFont());
     int iconW = fm.stringWidth(icon);
 
-    g2d.drawString(icon, getWidth() - iconW +  x, y);
+    g2d.drawString(icon, getWidth() - iconW +  x, y + (DIMEN * .08f));
 
     g2d.setFont(Fonts.light.deriveFont(DIMEN * .4f));
     fm = getFontMetrics(g2d.getFont());
-    int lineW = fm.stringWidth(line);
+    String sub = line;
+    int max = 72;
+    if (sub.length() > max)
+      sub = sub.substring(0, max) + "...";
+    int lineW = fm.stringWidth(sub);
 
-    g2d.drawString(line, getWidth() - iconW - lineW - 10 + x, y);
+    g2d.drawString(sub, getWidth() - iconW - lineW - 10 + x, y);
   }
 
   /**
@@ -91,7 +95,7 @@ public class NewsView extends Widget implements ActionListener {
    */
   @Override
   public Dimension getPreferredSize() {
-    return new Dimension(700, (int) (LINE_COUNT * DIMEN * 1.5f));
+    return new Dimension(600, (int) (LINE_COUNT * DIMEN * 1.1f));
   }
 
   /**

@@ -1,4 +1,4 @@
-package info.cantu.smartmirror;
+package info.cantu.smartmirror.view;
 
 import info.cantu.smartmirror.model.BaseModel;
 import info.cantu.smartmirror.view.Widget;

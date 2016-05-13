@@ -1,19 +1,19 @@
 package info.cantu.smartmirror;
 
 import info.cantu.smartmirror.model.BaseModel;
+import info.cantu.smartmirror.model.calendar.CalendarModel;
+import info.cantu.smartmirror.model.calendar.CalendarView;
 import info.cantu.smartmirror.model.clock.ClockModel;
 import info.cantu.smartmirror.model.clock.ClockView;
 import info.cantu.smartmirror.model.clock.DateView;
 import info.cantu.smartmirror.model.news.NewsModel;
 import info.cantu.smartmirror.model.news.NewsView;
+import info.cantu.smartmirror.model.notifications.NotificationModel;
 import info.cantu.smartmirror.model.weather.WeatherForecastView;
 import info.cantu.smartmirror.model.weather.WeatherIcons;
 import info.cantu.smartmirror.model.weather.WeatherModel;
 import info.cantu.smartmirror.model.weather.WeatherView;
-import info.cantu.smartmirror.view.Fonts;
-import info.cantu.smartmirror.view.MainView;
-import info.cantu.smartmirror.view.MaterialIcons;
-import info.cantu.smartmirror.view.Widget;
+import info.cantu.smartmirror.view.*;
 
 import java.awt.*;
 import java.io.IOException;
@@ -42,6 +42,10 @@ public class Main {
     models.add(weather);
     NewsModel news = new NewsModel();
     models.add(news);
+    CalendarModel calendar = new CalendarModel();
+    models.add(calendar);
+    NotificationModel notifications = new NotificationModel();
+    models.add(notifications);
 
     //add date & time
     addWidget(new ClockView(), clock);
@@ -51,8 +55,11 @@ public class Main {
     addWidget(new WeatherView(), weather);
     addWidget(new WeatherForecastView(), weather);
 
-    addWidget(new GlueWidget(), null);
+    //add calendar
+    addWidget(new CalendarView(), calendar);
+
     //add news
+    addWidget(new GlueWidget(), null);
     addWidget(new NewsView(), news);
 
     new MainView().initialize(widgets);

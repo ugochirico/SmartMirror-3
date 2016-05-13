@@ -19,8 +19,11 @@ public abstract class BaseModel implements ActionListener {
 
   public void initialize() {
     update();
-    Timer timer = new Timer(getInterval(), this);
-    timer.start();
+    long interval = getInterval();
+    if (interval > 0) {
+      Timer timer = new Timer(getInterval(), this);
+      timer.start();
+    }
   }
 
   /**
