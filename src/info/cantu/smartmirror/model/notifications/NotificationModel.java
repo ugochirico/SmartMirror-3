@@ -2,20 +2,13 @@ package info.cantu.smartmirror.model.notifications;
 
 import com.github.sheigutn.pushbullet.Pushbullet;
 import com.github.sheigutn.pushbullet.ephemeral.DismissalEphemeral;
-import com.github.sheigutn.pushbullet.ephemeral.Ephemeral;
 import com.github.sheigutn.pushbullet.ephemeral.NotificationEphemeral;
-import com.github.sheigutn.pushbullet.gson.RuntimeTypeAdapterFactory;
-import com.github.sheigutn.pushbullet.items.push.sent.Push;
-import com.github.sheigutn.pushbullet.items.push.sent.defaults.NotePush;
 import com.github.sheigutn.pushbullet.stream.PushbulletWebsocketClient;
 import com.github.sheigutn.pushbullet.stream.PushbulletWebsocketListener;
 import com.github.sheigutn.pushbullet.stream.message.PushStreamMessage;
 import com.github.sheigutn.pushbullet.stream.message.StreamMessage;
 import com.github.sheigutn.pushbullet.stream.message.StreamMessageType;
-import com.google.gson.*;
 import info.cantu.smartmirror.model.BaseModel;
-
-import java.util.List;
 
 /**
  * Created by Viviano on 5/12/2016.
@@ -68,6 +61,6 @@ public class NotificationModel extends BaseModel {
       }
     });
     sock.connect();
-    System.out.println("connected");
+    System.out.println("pushbullet socket connected");
   }
 }

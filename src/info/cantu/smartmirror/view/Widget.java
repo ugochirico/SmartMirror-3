@@ -39,10 +39,10 @@ public abstract class Widget extends JPanel implements BaseModel.UpdateListener 
   /**
    * Draws string centered on the x axis
    *
-   * @param str
-   * @param x
-   * @param y
-   * @param g2d
+   * @param str String to draw
+   * @param x center x position
+   * @param y y position of base of text
+   * @param g2d graphics(will use it's font size)
    */
   protected void centerString(String str, int x, int y, Graphics2D g2d) {
     FontMetrics fm = getFontMetrics(g2d.getFont());
@@ -67,4 +67,30 @@ public abstract class Widget extends JPanel implements BaseModel.UpdateListener 
   public Dimension getMinimumSize() {
     return getPreferredSize();
   }
+
+  /**
+   * Draws the headline attached to the left
+   *
+   * @param line headline
+   * @param x position of line where 0 shows all and getWidth() hides all
+   * @param y position of the base of the text
+   * @param g2d graphics (will use it's font size
+   */
+  protected void drawLine(String line, String icon, int x, int y, float size, Graphics2D g2d) {
+    int iconW = MaterialIcons.iconWidth(icon, size * .6f, g2d);
+    int hgap = iconW / 4;
+
+    MaterialIcons.draw(icon,
+            getWidth() - hgap + x,
+            (int)(y + size * .08f),
+            size * .6f, g2d);
+
+    g2d.setFont(Fonts.light.deriveFont(size * .4f));
+
+    FontMetrics fm = g2d.getFontMetrics();
+    int lineW = fm.stringWidth(line);
+
+    g2d.drawString(line, getWidth() - iconW - lineW - hgap * 2 + x, y);
+  }
+
 }

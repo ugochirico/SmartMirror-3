@@ -6,6 +6,7 @@ import info.cantu.smartmirror.view.MaterialIcons;
 import info.cantu.smartmirror.view.Widget;
 import info.cantu.smartmirror.view.animator.Animator;
 import info.cantu.smartmirror.view.animator.interpolators.AccelerateInterpolator;
+import info.cantu.smartmirror.view.animator.interpolators.DecelerateInterpolator;
 import info.cantu.smartmirror.view.animator.interpolators.OvershootInterpolator;
 
 import javax.swing.*;
@@ -23,9 +24,11 @@ public class NewsView extends Widget implements ActionListener {
 
   private String[] headlines;
   private int[] positions;
+  private float[] scrollPer;
   private boolean showing = false;
 
-  private Timer timer;
+  private Timer scrollTimer;
+  private boolean goingLeft = true;
   private int currIndex = 0;
 
   /**
@@ -33,9 +36,9 @@ public class NewsView extends Widget implements ActionListener {
    */
   @Override
   protected void onInitialize() {
-    this.timer = new Timer(3000 * LINE_COUNT, this);
-    this.timer.start();
+    new Timer(3000 * LINE_COUNT, this).start();
     positions = new int[LINE_COUNT];
+    scrollPer = new float[LINE_COUNT];
   }
 
   /**
@@ -69,24 +72,27 @@ public class NewsView extends Widget implements ActionListener {
    */
   private void drawLine(String line, int level, int x, Graphics2D g2d) {
     int y = (int) (DIMEN * (level + 1));
+    int iconW = MaterialIcons.iconWidth("newspaper", DIMEN * .6f, g2d);
+    int hgap = iconW / 4;
 
-    g2d.setFont(MaterialIcons.font.deriveFont(DIMEN * .6f));
-    String icon = MaterialIcons.getIcon("newspaper");
-
-    FontMetrics fm = getFontMetrics(g2d.getFont());
-    int iconW = fm.stringWidth(icon);
-
-    g2d.drawString(icon, getWidth() - iconW +  x, y + (DIMEN * .08f));
+    MaterialIcons.draw("newspaper",
+            getWidth() - hgap + x, (int)(y + DIMEN * .08f),
+            DIMEN * .6f, g2d);
 
     g2d.setFont(Fonts.light.deriveFont(DIMEN * .4f));
-    fm = getFontMetrics(g2d.getFont());
-    String sub = line;
-    int max = 72;
-    if (sub.length() > max)
-      sub = sub.substring(0, max) + "...";
-    int lineW = fm.stringWidth(sub);
 
-    g2d.drawString(sub, getWidth() - iconW - lineW - 10 + x, y);
+    FontMetrics fm = getFontMetrics(g2d.getFont());
+    int lineW = fm.stringWidth(line);
+    int textWidth = getWidth() - hgap * 2 - iconW;
+
+    int diff = lineW - textWidth;
+    if (diff < 0)
+      diff = 0;
+
+    g2d.setClip(x, (int)(y - DIMEN + fm.getDescent()), textWidth, (int)DIMEN);
+    g2d.drawString(line, textWidth - lineW + x
+            + (diff * scrollPer[level]), y);
+    g2d.setClip(null);
   }
 
   /**
@@ -127,21 +133,29 @@ public class NewsView extends Widget implements ActionListener {
   }
 
   private void animateEntry() {
+    //set scroll before entering
+    for (int i=0; i<scrollPer.length; i++) {
+      scrollPer[i] = 1f;
+    }
+    goingLeft = false;
+
     showing = true;
     for (int i = 0; i < LINE_COUNT; i++) {
       positions[i] = getWidth();
       final int finalI = i;
-      new Animator(getWidth(), 0)
+      Animator anim = new Animator(getWidth(), 0)
               .setDuration(500)
-              .setStartDelay(i * 250)
+              .setStartDelay(i * 120)
               .setInterpolator(new OvershootInterpolator(.6f))
-              .addUpdateListener(new Animator.UpdateListener() {
-                @Override
-                public void onUpdate(float value) {
-                  positions[finalI] = (int)value;
-                  repaint();
-                }
-              }).start();
+              .addUpdateListener(value -> {
+                positions[finalI] = (int)value;
+                repaint();
+              });
+      if (i == LINE_COUNT - 1)//last one
+        anim.addEndListener(() -> {
+          startScroller();
+        });
+      anim.start();
     }
   }
 
@@ -151,27 +165,46 @@ public class NewsView extends Widget implements ActionListener {
       final int finalI = i;
       Animator anim = new Animator(0, getWidth())
               .setDuration(500)
-              .setStartDelay(i * 250)
+              .setStartDelay(i * 120)
               .setInterpolator(new AccelerateInterpolator())
-              .addUpdateListener(new Animator.UpdateListener() {
-                @Override
-                public void onUpdate(float value) {
-                  positions[finalI] = (int)value;
-                  repaint();
-                }
+              .addUpdateListener(value -> {
+                positions[finalI] = (int)value;
+                repaint();
               });
       if (i == LINE_COUNT - 1)//last one
-        anim.addEndListener(new Animator.EndListener() {
-          @Override
-          public void onEnd() {
-            //cycle through news
-            currIndex += LINE_COUNT;
-            if (currIndex >= headlines.length)
-              currIndex = 0;
-            animateEntry();
-          }
+        anim.addEndListener(() -> {
+          if (scrollTimer != null)
+            scrollTimer.stop();//stop scroller
+          //cycle through news
+          currIndex += LINE_COUNT;
+          if (currIndex >= headlines.length)
+            currIndex = 0;
+          animateEntry();
         });
       anim.start();
     }
+  }
+
+  private void startScroller() {
+    //set scroll before entering
+    for (int i=0; i<scrollPer.length; i++) {
+      scrollPer[i] = 1f;
+    }
+
+    this.scrollTimer = new Timer(3000, event -> {
+      new Animator(goingLeft ? 1f : 0f, goingLeft ? 0f : 1f)
+              .setDuration(2000)
+              .addUpdateListener(value -> {
+                for (int i=0; i<scrollPer.length; i++) {
+                  scrollPer[i] = value;
+                }
+                repaint();
+              })
+              .addEndListener(() -> {
+                goingLeft = !goingLeft;
+              })
+              .start();
+    });
+    this.scrollTimer.start();
   }
 }

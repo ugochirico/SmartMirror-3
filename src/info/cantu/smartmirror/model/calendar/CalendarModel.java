@@ -11,7 +11,9 @@ import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.DateTime;
 import com.google.api.client.util.store.FileDataStoreFactory;
-import com.google.api.services.calendar.CalendarScopes;
+import com.google.api.services.calendar.*;
+import com.google.api.services.calendar.model.CalendarList;
+import com.google.api.services.calendar.model.CalendarListEntry;
 import com.google.api.services.calendar.model.Event;
 import com.google.api.services.calendar.model.Events;
 import info.cantu.smartmirror.model.BaseModel;
@@ -19,9 +21,8 @@ import info.cantu.smartmirror.model.BaseModel;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
+import java.util.Calendar;
 
 /**
  * Created by Viviano on 5/6/2016.
@@ -115,7 +116,7 @@ public class CalendarModel extends BaseModel{
    */
   @Override
   protected int getInterval() {
-    return 1000 * 60 * 10 / 60;
+    return 1000 * 60 * 1;
   }
 
   /**
@@ -132,23 +133,62 @@ public class CalendarModel extends BaseModel{
       com.google.api.services.calendar.Calendar service =
               getCalendarService();
 
-      // List the next 10 events from the primary calendar.
-      DateTime now = new DateTime(System.currentTimeMillis());
-      Events events = service.events().list("primary")
-              .setMaxResults(10)
-              .setTimeMin(now)
-              .setTimeMax(new DateTime(System.currentTimeMillis()
-              + 1000 * 3600 * 24 * 5))//within the next 5 days
-              .setOrderBy("startTime")
-              .setSingleEvents(true)
-              .execute();
+      Calendar curr = Calendar.getInstance();
+      Calendar min = new GregorianCalendar(
+              curr.get(Calendar.YEAR), curr.get(Calendar.MONTH), 1);
+      Calendar max = new GregorianCalendar(
+              curr.get(Calendar.YEAR), curr.get(Calendar.MONTH) + 1 % 12, 7);
+      //get all events from this month and the first week of next month
 
-      items = events.getItems();
+      CalendarList calendars = service.calendarList().list().execute();
+      List<CalendarListEntry> lst = calendars.getItems();
+
+      //clear items
+      items = null;
+      for (CalendarListEntry cle : lst) {
+        Events events = service.events().list(cle.getId())
+                .setTimeMin(new DateTime(min.getTimeInMillis()))
+                .setTimeMax(new DateTime(max.getTimeInMillis()))
+                .execute();
+        if (items == null)
+          items = events.getItems();
+        else
+          items.addAll(events.getItems());
+      }
       invalidate();
+
+      for (Event e : items) {
+        System.out.println(e.getSummary());
+        System.out.println(e.getDescription());
+        System.out.println(e.getCreator().getDisplayName());
+        System.out.println();
+      }
+
     }
     catch (Exception e) {
       e.printStackTrace();
     }
+  }
+
+  public int getEventCount() {
+    return items.size();
+  }
+
+  public String getSummary(int index) {
+    return items.get(index).getSummary();
+  }
+
+  public Date getStartTime(int index) {
+    Event event = items.get(index);
+    DateTime start = event.getStart().getDateTime();
+    if (start == null) {
+      start = event.getStart().getDate();
+    }
+    return new Date(start.getValue());
+  }
+
+  public Boolean isAllDay(int index) {
+    return items.get(index).getStart().getDateTime() == null;
   }
 
   public String[] getSummaries() {
