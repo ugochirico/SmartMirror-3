@@ -156,14 +156,6 @@ public class CalendarModel extends BaseModel{
           items.addAll(events.getItems());
       }
       invalidate();
-
-      for (Event e : items) {
-        System.out.println(e.getSummary());
-        System.out.println(e.getDescription());
-        System.out.println(e.getCreator().getDisplayName());
-        System.out.println();
-      }
-
     }
     catch (Exception e) {
       e.printStackTrace();
@@ -187,33 +179,12 @@ public class CalendarModel extends BaseModel{
     return new Date(start.getValue());
   }
 
-  public Boolean isAllDay(int index) {
+  public boolean isAllDay(int index) {
     return items.get(index).getStart().getDateTime() == null;
   }
 
-  public String[] getSummaries() {
-    String[] arr = new String[items.size()];
-    int i = 0;
-    for (Event event : items) {
-      arr[i] = event.getSummary();
-      i++;
-    }
-    return arr;
-  }
-
-  public Date[] getStartTimes() {
-    Date[] arr = new Date[items.size()];
-    int i = 0;
-    for (Event event : items) {
-      DateTime start = event.getStart().getDateTime();
-      if (start == null) {
-        start = event.getStart().getDate();
-      }
-      Date d = new Date(start.getValue());
-      arr[i] = d;
-      i++;
-    }
-    return arr;
+  public String getDescription(int index) {
+    return items.get(index).getDescription();
   }
 
 }

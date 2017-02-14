@@ -8,6 +8,7 @@ import info.cantu.smartmirror.view.animator.Animator;
 import info.cantu.smartmirror.view.animator.interpolators.AccelerateInterpolator;
 import info.cantu.smartmirror.view.animator.interpolators.OvershootInterpolator;
 
+import javax.swing.Timer;
 import java.awt.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -28,9 +29,9 @@ public class CalendarView extends Widget {
   private float DIMEN = 40f;
   private final int MAX_COUNT = 4;
 
-  private Day[][] days;
-  private Event[] events;
-  private int current = 0;
+  private Day[][] days;//month array
+  private Event[] events, showing;
+  private int current = 0;//represents the page number
 
   /**
    * Paints each of the components in this container.
@@ -41,7 +42,6 @@ public class CalendarView extends Widget {
    */
   @Override
   public void paintComponent(Graphics g) {
-    //setBackground(Color.GRAY);
     super.paintComponent(g);
     if (events == null)//if one is null they are all null
       return;
@@ -50,16 +50,10 @@ public class CalendarView extends Widget {
     drawCalendar(0, g2d);
 
     Calendar cal = Calendar.getInstance();
-    int currLevel = 0;
-    for (int i = 0; i < events.length; i++) {
-      if (events[i] != null) {
-        if (cal.compareTo(events[i].getCal()) <= 0) {
-          String addon = getAddon(events[i], cal);
-          drawLine(events[i].summary + addon, "calendar", (int) (getWidth() * events[i].w),
-                  200 + 40 * currLevel, 40f, g2d);
-          currLevel++;
-        }
-      }
+    for (int i = 0; i < showing.length; i++) {
+        String addon = getAddon(showing[i], cal);
+        drawLine(showing[i].summary + addon, "calendar", (int) (getWidth() * showing[i].w),
+                200 + 40 * i, 40f, g2d);
     }
   }
 
@@ -143,19 +137,54 @@ public class CalendarView extends Widget {
     CalendarModel cm = (CalendarModel)model;
     initializeCalendar();
 
-    String[] summaries = cm.getSummaries();
-    Date[] starts = cm.getStartTimes();
 
     List<Event> lst = new ArrayList<>();
-    this.events = new Event[summaries.length];
+    this.events = new Event[cm.getEventCount()];
 
-    for (int i=0; i<summaries.length; i++) {
-      lst.add(createEvent(summaries[i], starts[i]));
+    for (int i=0; i<events.length; i++) {
+      lst.add(createEvent(
+              cm.getSummary(i),
+              cm.getDescription(i),
+              cm.getStartTime(i)));
     }
     lst.sort((e1, e2) -> e1.date.compareTo(e2.date));
 
+
+    //Adds the current
     this.events = lst.toArray(this.events);
+
+    if (showing == null || true) {
+      updateShowing();
+      startSlideshow();
+    } else {
+      animateExit(() -> {
+        updateShowing();
+        startSlideshow();
+      });
+    }
+
     repaint();
+  }
+
+  private void updateShowing() {
+    this.showing = new Event[MAX_COUNT];
+    Calendar cal = Calendar.getInstance();
+    int idx = 0;
+    for (int i = 0, curr = 0; i < events.length
+            && curr < MAX_COUNT * (current+1); i++) {
+      if (cal.compareTo(events[i].getCal()) <= 0) {
+        if (curr >= current * MAX_COUNT) {
+          this.showing[idx] = events[i];
+          idx++;
+        }
+        curr++;
+      }
+    }
+    if (showing[0] == null) {
+      //reset page
+      current = 0;
+      updateShowing();
+    }
   }
 
   /**
@@ -183,14 +212,15 @@ public class CalendarView extends Widget {
    * Creates an event and links it to a day if it exists
    *
    * @param summary summary of the event
+   * @param description description of the event
    * @param date date of the event
    * @return the created event
    */
-  private Event createEvent(String summary, Date date) {
+  private Event createEvent(String summary, String description, Date date) {
     int mo = date.getMonth();
     int day = date.getDate();
 
-    Event e = new Event(summary, date);
+    Event e = new Event(summary, description, date);
     for (Day[] arr : days) {
       for (Day d : arr) {
         if (d != null && d.month == mo && d.date == day) {
@@ -249,10 +279,10 @@ public class CalendarView extends Widget {
       return " tomorrow at " + e.time;
     }
     if (diffW == 0) {//same week
-      return " " + dow;// + " at " + e.time;
+      return " " + dow + " at " + e.time;
     }
     else if (diffW == 1) {//next week
-      return " next " + dow + " at " + e.time;
+      return " next " + dow;// + " at " + e.time;
     }
     else if (diffD >= 1) {//event is later
       if (e.day.month
@@ -303,13 +333,14 @@ public class CalendarView extends Widget {
    * Event class
    */
   private class Event {
-    String summary, time;
+    String summary, description, time;
     Date date;
     Day day;
-    float w = 0f;
+    float w = 1f;
 
-    Event(String summary, Date date) {
+    Event(String summary, String description, Date date) {
       this.summary = summary;
+      this.description = description;
       this.time = new SimpleDateFormat("h:mmaa")
               .format(date).toLowerCase();
       this.date = date;
@@ -322,32 +353,80 @@ public class CalendarView extends Widget {
     }
 
     void animateEntry(int level) {
-      Animator anim = new Animator(1f, 0f)
+      new Animator(1f, 0f)
               .setDuration(500)
-              .setStartDelay(level * 250)
+              .setStartDelay(level * 80)
               .setInterpolator(new OvershootInterpolator())
               .addUpdateListener(value -> {
                 w = value;
                 repaint();
-              });
-      if (level == MAX_COUNT - 1)
-        anim.addEndListener(() -> {
-          current += MAX_COUNT;
-          if (current >= events.length)
-            current = 0;
-        });
-      anim.start();
+              }).start();
     }
 
     void animateExit(int level) {
       new Animator(0f, 1f)
               .setDuration(500)
-              .setStartDelay(level * 250)
+              .setStartDelay(level * 80)
               .setInterpolator(new AccelerateInterpolator())
               .addUpdateListener(value -> {
                 w = value;
                 repaint();
               }).start();
     }
+
+    void animateExit(int level, Animator.EndListener end) {
+      new Animator(0f, 1f)
+              .setDuration(500)
+              .setStartDelay(level * 80)
+              .setInterpolator(new AccelerateInterpolator())
+              .addUpdateListener(value -> {
+                w = value;
+                repaint();
+              })
+              .addEndListener(end)
+              .start();
+    }
   }
+
+  private void startSlideshow() {
+    animateEntry();
+    javax.swing.Timer t = new Timer(4000 * MAX_COUNT,
+            event -> {
+              animateExit();
+            });
+    //t.start();
+  }
+
+  /**
+   * Animates the entry of all the events which are showing
+   */
+  private void animateEntry() {
+    for (int i=0; i<showing.length; i++) {
+      showing[i].animateEntry(i);
+    }
+  }
+
+  /**
+   * Animates the exit of all the events which are showing
+   */
+  private void animateExit() {
+    animateExit(() -> {
+      current++;
+      updateShowing();
+      animateEntry();
+    });
+  }
+
+  /**
+   * Animates the exit of all the events which are showing
+   */
+  private void animateExit(Animator.EndListener end) {
+    for (int i=0; i<showing.length; i++) {
+      if (i < showing.length - 1)
+        showing[i].animateExit(i);
+      else
+        showing[i].animateExit(i, end);
+    }
+  }
+
 }
