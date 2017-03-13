@@ -24,6 +24,7 @@ public class NotificationModel extends BaseModel {
    */
   @Override
   protected int getInterval() {
+    // the program will be notified of a change so no refresh is needed
     return -1;
   }
 

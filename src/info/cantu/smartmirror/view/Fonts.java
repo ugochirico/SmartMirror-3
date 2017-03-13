@@ -9,6 +9,7 @@ import java.io.*;
 public class Fonts {
 
   public static Font bold, light, regular, thin;
+  public static Font monserrat;
 
   public static void load() throws IOException, FontFormatException {
     bold = Font.createFont(Font.TRUETYPE_FONT,
@@ -19,11 +20,14 @@ public class Fonts {
             Fonts.class.getResourceAsStream("/Roboto-Regular.ttf"));
     thin = Font.createFont(Font.TRUETYPE_FONT,
             Fonts.class.getResourceAsStream("/Roboto-Thin.ttf"));
+    monserrat = Font.createFont(Font.TRUETYPE_FONT,
+            Fonts.class.getResourceAsStream("/Monserrat_regular.ttf"));
 
     GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
     ge.registerFont(bold);
     ge.registerFont(light);
     ge.registerFont(regular);
     ge.registerFont(thin);
+    ge.registerFont(monserrat);
   }
 }

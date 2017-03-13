@@ -11,18 +11,15 @@ import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.DateTime;
 import com.google.api.client.util.store.FileDataStoreFactory;
-import com.google.api.services.calendar.*;
+import com.google.api.services.calendar.CalendarScopes;
 import com.google.api.services.calendar.model.CalendarList;
 import com.google.api.services.calendar.model.CalendarListEntry;
 import com.google.api.services.calendar.model.Event;
 import com.google.api.services.calendar.model.Events;
 import info.cantu.smartmirror.model.BaseModel;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.util.*;
-import java.util.Calendar;
 
 /**
  * Created by Viviano on 5/6/2016.
@@ -106,8 +103,9 @@ public class CalendarModel extends BaseModel{
 
 
   //model starts here
-
   private List<Event> items;
+  private CalendarEvent[] events;
+  private CalendarDay[][] month;
 
   /**
    * Time in milliseconds it will take for this model to onUpdate it's data
@@ -135,26 +133,30 @@ public class CalendarModel extends BaseModel{
 
       Calendar curr = Calendar.getInstance();
       Calendar min = new GregorianCalendar(
-              curr.get(Calendar.YEAR), curr.get(Calendar.MONTH), 1);
+          curr.get(Calendar.YEAR), curr.get(Calendar.MONTH), 1);
       Calendar max = new GregorianCalendar(
-              curr.get(Calendar.YEAR), curr.get(Calendar.MONTH) + 1 % 12, 7);
+          curr.get(Calendar.YEAR), curr.get(Calendar.MONTH) + 1 % 12, 7);
       //get all events from this month and the first week of next month
 
       CalendarList calendars = service.calendarList().list().execute();
       List<CalendarListEntry> lst = calendars.getItems();
 
       //clear items
-      items = null;
+      items = null;//TODO why is this null?
       for (CalendarListEntry cle : lst) {
         Events events = service.events().list(cle.getId())
-                .setTimeMin(new DateTime(min.getTimeInMillis()))
-                .setTimeMax(new DateTime(max.getTimeInMillis()))
-                .execute();
+            .setTimeMin(new DateTime(min.getTimeInMillis()))
+            .setTimeMax(new DateTime(max.getTimeInMillis()))
+            .execute();
         if (items == null)
           items = events.getItems();
         else
           items.addAll(events.getItems());
       }
+
+      month = CalendarDay.generateMonth();
+      //initializeEvents();
+
       invalidate();
     }
     catch (Exception e) {
@@ -162,29 +164,52 @@ public class CalendarModel extends BaseModel{
     }
   }
 
-  public int getEventCount() {
-    return items.size();
+
+
+//  private void initializeEvents() {
+//    events = new CalendarEvent[items.size()];
+//    int i = 0;
+//    for (Event event : items) {
+//      boolean isAllDay = false;
+//      // all-day events have a null datetime but a valid date
+//      DateTime start = event.getStart().getDateTime();
+//      if (start == null) {
+//        start = event.getStart().getDate();
+//        isAllDay = true;
+//      }
+//      Date d = new Date(start.getValue());
+//
+//
+//      int mo = date.getMonth();
+//      int day = date.getDate();
+//
+//      CalendarView.Event e = new CalendarView.Event(summary, description, date);
+//      for (Day[] arr : days) {
+//        for (Day d : arr) {
+//          if (d != null && d.month == mo && d.date == day) {
+//            d.add(e);
+//          }
+//        }
+//      }
+//
+//      // initialize CalendarEvent
+//      events[i] = new CalendarEvent(event.getSummary(), d, isAllDay, );
+//      i++;
+//    }
+//  }
+
+  /**
+   * @return a month with the current events added
+   */
+  public CalendarDay[][] getMonth() {
+    return month;
   }
 
-  public String getSummary(int index) {
-    return items.get(index).getSummary();
-  }
-
-  public Date getStartTime(int index) {
-    Event event = items.get(index);
-    DateTime start = event.getStart().getDateTime();
-    if (start == null) {
-      start = event.getStart().getDate();
-    }
-    return new Date(start.getValue());
-  }
-
-  public boolean isAllDay(int index) {
-    return items.get(index).getStart().getDateTime() == null;
-  }
-
-  public String getDescription(int index) {
-    return items.get(index).getDescription();
+  /**
+   * @return all calendar events
+   */
+  public CalendarEvent[] getEvents() {
+    return events;
   }
 
 }

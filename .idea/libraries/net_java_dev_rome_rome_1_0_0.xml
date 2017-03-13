@@ -4,11 +4,19 @@
     <CLASSES>
       <root url="jar://$MAVEN_REPOSITORY$/net/java/dev/rome/rome/1.0.0/rome-1.0.0.jar!/" />
       <root url="jar://$MAVEN_REPOSITORY$/jdom/jdom/1.0/jdom-1.0.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/net/java/dev/rome/rome/1.0.0/rome-1.0.0.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/jdom/jdom/1.0/jdom-1.0.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/net/java/dev/rome/rome/1.0.0/rome-1.0.0.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/jdom/jdom/1.0/jdom-1.0.jar!/" />
     </CLASSES>
     <JAVADOC>
       <root url="jar://$MAVEN_REPOSITORY$/net/java/dev/rome/rome/1.0.0/rome-1.0.0-javadoc.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/net/java/dev/rome/rome/1.0.0/rome-1.0.0-javadoc.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/net/java/dev/rome/rome/1.0.0/rome-1.0.0-javadoc.jar!/" />
     </JAVADOC>
     <SOURCES>
+      <root url="jar://$MAVEN_REPOSITORY$/net/java/dev/rome/rome/1.0.0/rome-1.0.0-sources.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/net/java/dev/rome/rome/1.0.0/rome-1.0.0-sources.jar!/" />
       <root url="jar://$MAVEN_REPOSITORY$/net/java/dev/rome/rome/1.0.0/rome-1.0.0-sources.jar!/" />
     </SOURCES>
   </library>

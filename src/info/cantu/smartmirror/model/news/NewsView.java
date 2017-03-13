@@ -20,16 +20,16 @@ import java.awt.event.ActionListener;
 public class NewsView extends Widget implements ActionListener {
 
   private float DIMEN = 40f;//line size
-  private int LINE_COUNT = 4;
+  private int LINE_COUNT = 4;//max line count
 
   private String[] headlines;
   private int[] positions;
-  private float[] scrollPer;
   private boolean showing = false;
 
   private Timer scrollTimer;
-  private boolean goingLeft = true;
-  private int currIndex = 0;
+  private float[] scrollPer; // to animate scrolling
+  private boolean goingLeft = true; // for scrolling direction
+  private int currIndex = 0; // current news shown
 
   /**
    * Called when the view is initialized
@@ -96,8 +96,7 @@ public class NewsView extends Widget implements ActionListener {
   }
 
   /**
-   * The three methods below are used by the box layout
-   * to force the preferred size
+   * Used by Box Layout to Force Preferred size
    */
   @Override
   public Dimension getPreferredSize() {

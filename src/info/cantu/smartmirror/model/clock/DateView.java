@@ -35,6 +35,9 @@ public class DateView extends Widget {
     g2d.drawString(this.date, this.getWidth() - width, DIMEN);
   }
 
+  /**
+   * Used by Box Layout to Force Preferred size
+   */
   @Override
   public Dimension getPreferredSize() {
     return new Dimension(400, (int)DIMEN + 30);

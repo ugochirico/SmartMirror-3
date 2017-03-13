@@ -37,6 +37,8 @@ public class Main {
     widgets = new ArrayList<>();
     models = new ArrayList<>();
 
+    // initialize all of the models
+    //   and add to models list
     ClockModel clock = new ClockModel();
     models.add(clock);
     WeatherModel weather = new WeatherModel();
@@ -47,6 +49,9 @@ public class Main {
     models.add(calendar);
     NotificationModel notifications = new NotificationModel();
     models.add(notifications);
+
+    // initialize all of the widgets
+    //   and add to the widgets list
 
     //add date & time
     addWidget(new ClockView(), clock);
@@ -68,6 +73,7 @@ public class Main {
       m.initialize();
   }
 
+  // Links a widget to a model and adds it to the widget list
   private static void addWidget(Widget widget, BaseModel linkTo) {
     widgets.add(widget);
     if (linkTo != null)
